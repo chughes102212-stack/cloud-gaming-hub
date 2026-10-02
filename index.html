@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Gaming Hub Browser</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #fff;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .address-bar {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px 12px;
+            gap: 8px;
+        }
+
+        .address-bar input {
+            flex: 1;
+            background: none;
+            border: none;
+            color: #fff;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .address-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .quick-links {
+            display: flex;
+            gap: 12px;
+            margin-left: auto;
+        }
+
+        .quick-link-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .quick-link-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 220px;
+            background: rgba(0, 0, 0, 0.4);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 16px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .sidebar-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.5);
+            margin-top: 16px;
+        }
+
+        .sidebar-item {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .sidebar-item.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .sidebar-icon {
+            font-size: 16px;
+        }
+
+        .content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .browser-frame {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .iframe-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: #000;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        .status-bar {
+            background: rgba(0, 0, 0, 0.4);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 16px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4ade80;
+            margin-right: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+
+            .quick-links {
+                flex-wrap: wrap;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">
+            🎮 Cloud Gaming Hub
+        </div>
+        <div class="address-bar">
+            <span style="color: rgba(255, 255, 255, 0.5);">🔒</span>
+            <input type="text" id="addressInput" placeholder="Enter URL or service name...">
+        </div>
+        <div class="nav-buttons">
+            <button class="btn" title="Back" onclick="goBack()">← Back</button>
+            <button class="btn" title="Forward" onclick="goForward()">Forward →</button>
+            <button class="btn" title="Refresh" onclick="refreshPage()">🔄 Refresh</button>
+        </div>
+        <div class="quick-links">
+            <button class="quick-link-btn" onclick="loadService('geforce')">🟩 GeForce NOW</button>
+            <button class="quick-link-btn" onclick="loadService('xbox')">🟦 Xbox Cloud</button>
+            <button class="quick-link-btn" onclick="loadService('home')">🏠 Home</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-title">Services</div>
+            <div class="sidebar-item active" onclick="loadService('home')" data-service="home">
+                <span class="sidebar-icon">🏠</span>
+                <span>Home</span>
+            </div>
+            <div class="sidebar-item" onclick="loadService('geforce')" data-service="geforce">
+                <span class="sidebar-icon">🟩</span>
+                <span>GeForce NOW</span>
+            </div>
+            <div class="sidebar-item" onclick="loadService('xbox')" data-service="xbox">
+                <span class="sidebar-icon">🟦</span>
+                <span>Xbox Cloud Gaming</span>
+            </div>
+
+            <div class="sidebar-title">Quick Access</div>
+            <div class="sidebar-item" onclick="loadService('steam')">
+                <span class="sidebar-icon">🎮</span>
+                <span>Steam</span>
+            </div>
+            <div class="sidebar-item" onclick="loadService('epic')">
+                <span class="sidebar-icon">⚡</span>
+                <span>Epic Games</span>
+            </div>
+
+            <div class="sidebar-title">About</div>
+            <div class="sidebar-item" onclick="showAbout()">
+                <span class="sidebar-icon">ℹ️</span>
+                <span>Info</span>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="browser-frame">
+                <div class="iframe-container" id="iframeContainer">
+                    <div class="loading" id="loading">
+                        <div class="spinner"></div>
+                        <div class="loading-text">Loading...</div>
+                    </div>
+                    <iframe id="mainFrame" src="" allow="autoplay; fullscreen; microphone; camera; gamepad"></iframe>
+                </div>
+                <div class="status-bar">
+                    <span><span class="status-indicator"></span>Connected</span>
+                    <span id="statusText">Ready</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const iframe = document.getElementById('mainFrame');
+        const addressInput = document.getElementById('addressInput');
+        const loading = document.getElementById('loading');
+        const statusText = document.getElementById('statusText');
+        const sidebarItems = document.querySelectorAll('.sidebar-item');
+
+        const services = {
+            home: {
+                name: 'Cloud Gaming Hub',
+                url: 'about:blank',
+                isCustom: true
+            },
+            geforce: {
+                name: 'GeForce NOW',
+                url: 'https://play.geforcenow.com'
+            },
+            xbox: {
+                name: 'Xbox Cloud Gaming',
+                url: 'https://www.xbox.com/play'
+            },
+            steam: {
+                name: 'Steam',
+                url: 'https://www.steampowered.com'
+            },
+            epic: {
+                name: 'Epic Games',
+                url: 'https://www.epicgames.com'
+            }
+        };
+
+        function loadService(service) {
+            const serviceData = services[service];
+            if (!serviceData) return;
+
+            sidebarItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            document.querySelector(`[data-service="${service}"]`)?.classList.add('active');
+
+            if (serviceData.isCustom) {
+                loadHome();
+            } else {
+                loadURL(serviceData.url, serviceData.name);
+            }
+        }
+
+        function loadURL(url, serviceName) {
+            addressInput.value = url;
+            statusText.textContent = `Loading ${serviceName}...`;
+            loading.style.display = 'flex';
+            
+            iframe.onload = () => {
+                loading.style.display = 'none';
+                statusText.textContent = `${serviceName} loaded`;
+            };
+
+            iframe.onerror = () => {
+                loading.style.display = 'none';
+                statusText.textContent = `Unable to load ${serviceName}`;
+            };
+
+            iframe.src = url;
+        }
+
+        function loadHome() {
+            const homeHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+                            color: #fff;
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                            min-height: 100vh;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            padding: 40px 20px;
+                        }
+                        h1 { font-size: 48px; margin-bottom: 20px; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+                        p { font-size: 18px; color: rgba(255, 255, 255, 0.7); margin-bottom: 40px; text-align: center; max-width: 600px; }
+                        .services-grid {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                            gap: 20px;
+                            width: 100%;
+                            max-width: 1200px;
+                        }
+                        .service-card {
+                            background: rgba(255, 255, 255, 0.1);
+                            border: 1px solid rgba(255, 255, 255, 0.2);
+                            border-radius: 12px;
+                            padding: 30px;
+                            text-align: center;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            backdrop-filter: blur(10px);
+                        }
+                        .service-card:hover {
+                            background: rgba(255, 255, 255, 0.15);
+                            transform: translateY(-5px);
+                            border-color: rgba(102, 126, 234, 0.5);
+                        }
+                        .service-icon { font-size: 64px; margin-bottom: 16px; }
+                        .service-name { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+                        .service-desc { font-size: 14px; color: rgba(255, 255, 255, 0.6); }
+                    </style>
+                </head>
+                <body>
+                    <h1>🎮 Cloud Gaming Hub</h1>
+                    <p>Your all-in-one browser for cloud gaming services. Launch your favorite games instantly.</p>
+                    <div class="services-grid">
+                        <div class="service-card" onclick="window.parent.loadService('geforce')">
+                            <div class="service-icon">🟩</div>
+                            <div class="service-name">GeForce NOW</div>
+                            <div class="service-desc">NVIDIA's cloud gaming platform</div>
+                        </div>
+                        <div class="service-card" onclick="window.parent.loadService('xbox')">
+                            <div class="service-icon">🟦</div>
+                            <div class="service-name">Xbox Cloud Gaming</div>
+                            <div class="service-desc">Play Game Pass titles in the cloud</div>
+                        </div>
+                        <div class="service-card" onclick="window.parent.loadService('steam')">
+                            <div class="service-icon">🎮</div>
+                            <div class="service-name">Steam</div>
+                            <div class="service-desc">Explore and launch Steam games</div>
+                        </div>
+                        <div class="service-card" onclick="window.parent.loadService('epic')">
+                            <div class="service-icon">⚡</div>
+                            <div class="service-name">Epic Games</div>
+                            <div class="service-desc">Discover Epic's game library</div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            iframe.srcdoc = homeHTML;
+            addressInput.value = 'cloud-gaming-hub://home';
+            statusText.textContent = 'Home';
+            loading.style.display = 'none';
+        }
+
+        function goBack() {
+            iframe.contentWindow?.history.back();
+        }
+
+        function goForward() {
+            iframe.contentWindow?.history.forward();
+        }
+
+        function refreshPage() {
+            iframe.contentWindow?.location.reload();
+            statusText.textContent = 'Refreshing...';
+        }
+
+        function showAbout() {
+            alert('Cloud Gaming Hub\n\nA unified browser for accessing cloud gaming services:\n\n• GeForce NOW - NVIDIA Cloud Gaming\n• Xbox Cloud Gaming - Microsoft\'s cloud service\n• Steam - Valve\'s game platform\n• Epic Games - Epic\'s platform\n\nBuilt for seamless cloud gaming experience.');
+        }
+
+        addressInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                let url = addressInput.value;
+                if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                    url = 'https://' + url;
+                }
+                loadURL(url, 'Website');
+            }
+        });
+
+        // Load home page on startup
+        loadHome();
+    </script>
+</body>
+</html>
